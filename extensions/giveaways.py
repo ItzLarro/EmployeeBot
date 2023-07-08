@@ -10,6 +10,35 @@ import random
 
 
 
+async def roll(reaction, traders_compound_guild):
+    role_entries = {
+            'Level 20': 1,
+            'Level 40': 1,
+            'Level 60': 1,
+            'Level 80': 1,
+            'Level 100': 1,
+            'Classified': 1,
+            'Covert': 2,
+            'Contraband': 4
+        }
+
+    users = [u async for u in reaction.users() if not u.bot]
+
+    extra_entries_users = []
+    for role_name, extra_entries in role_entries.items():
+        role = discord.utils.get(traders_compound_guild.roles, name=role_name)
+        if role:
+            role_users = [u for u in users if role in u.roles]
+            extra_entries_users.extend(role_users * extra_entries)
+
+    users += extra_entries_users
+
+    if users:
+        winner = random.choice(users)
+    
+    return winner
+
+
 async def flag(message_id, channel_id):
     async with aiosqlite.connect(DB) as conn:
         cursor = await conn.cursor()
@@ -56,17 +85,13 @@ class Giveaway(commands.Cog):
             await interaction.response.send_message(f"The time must be an integer, please use an integer next time.")
             return
 
-        print(time)
-        channel_id = channel.id
 
+        channel_id = channel.id
 
 
         end_time = discord.utils.utcnow() + datetime.timedelta(seconds=time)
         end_time_relative = discord.utils.format_dt(end_time, "R")
-        print(end_time)
 
-
-        print(channel_id)
         GiveawayEmbed = discord.Embed(title = f"{prize}", description = "ㅤ", color = 0x86def2)
         GiveawayEmbed.add_field(name = f"<:tc_clock:1126623703996838018> Ends: {end_time_relative}", value = "ㅤ", inline = False)
         GiveawayEmbed.add_field(name = "<:tc_plus:1126625934607400980> Extra Luck:", value = "• <@&1121860722054414397> 2-5 Extra Entries\n• Every 20 levels you get an extra entry", inline =False)
@@ -93,42 +118,28 @@ class Giveaway(commands.Cog):
 
     @tasks.loop()
     async def giveaway(self):
-        print("hi0")
+
         
         async with aiosqlite.connect(DB) as conn:
-            print("hi1")
             cursor = await conn.cursor()
             await cursor.execute('SELECT prize, end_time, completed, channel_id, message_id FROM Giveaways WHERE completed = FALSE ORDER BY datetime(end_time) ASC LIMIT 1')
             row = await cursor.fetchone()
 
 
         if not row:
-            print("hi1.5")
             self.giveaway.stop()
             return
 
 
-        print("hi2")
-
         prize, end_time, completed, channel_id, message_id = row
 
-        print(end_time)
-
-        print("hi3")
         channel = self.bot.get_channel(channel_id)
 
 
         end_time_dt = datetime.datetime.fromisoformat(end_time)
 
 
-        print("hi4")
-
-
-        print(end_time_dt)
-
         await discord.utils.sleep_until(end_time_dt)
-
-        print("hi5")
 
 
         channel = self.bot.get_channel(channel_id)
@@ -153,34 +164,9 @@ class Giveaway(commands.Cog):
             flag(message_id, channel_id)
             return
 
-        role_entries = {
-            'Level 20': 1,
-            'Level 40': 1,
-            'Level 60': 1,
-            'Level 80': 1,
-            'Level 100': 1,
-            'Classified': 1,
-            'Covert': 2,
-            'Contraband': 4
-        }
+        winner = await roll(reaction, traders_compound_guild)
 
-        users = [u async for u in reaction.users() if not u.bot]
-
-        extra_entries_users = []
-        for role_name, extra_entries in role_entries.items():
-            role = discord.utils.get(traders_compound_guild.roles, name=role_name)
-            if role:
-                role_users = [u for u in users if role in u.roles]
-                extra_entries_users.extend(role_users * extra_entries)
-
-        users += extra_entries_users
-
-        if users:
-            print(users)
-            winner = random.choice(users)
-            await channel.send(f"Congratulations {winner.mention}, you won the {prize}! <:tc_tada:1102929530794016870>")
-        else:
-            await channel.send("No eligible winner found.")
+        await channel.send(f"Congratulations {winner.mention}, you won the {prize}! <:tc_tada:1102929530794016870>")
 
 
         FinishedEmbed = discord.Embed(title = f"{prize}", description="This Giveaway Has Ended", color = 0x86def2)
@@ -206,8 +192,7 @@ class Giveaway(commands.Cog):
 
         async with aiosqlite.connect(DB) as conn:
             cursor = await conn.cursor()
-            await cursor.execute('SELECT prize FROM Giveaways WHERE message_id = ? AND channel_id = ?')
-            (message_id, channel_id)
+            await cursor.execute('SELECT prize FROM Giveaways WHERE message_id = ? AND channel_id = ?', (message_id, channel_id))
             row = await cursor.fetchone()
 
         if not row:
@@ -239,35 +224,11 @@ class Giveaway(commands.Cog):
             return
 
 
-        role_entries = {
-            'Level 20': 1,
-            'Level 40': 1,
-            'Level 60': 1,
-            'Level 80': 1,
-            'Level 100': 1,
-            'Classified': 1,
-            'Covert': 2,
-            'Contraband': 4
-        }
+        winner = await roll(reaction, traders_compound_guild)
 
-        users = [u async for u in reaction.users() if not u.bot]
 
-        extra_entries_users = []
-        for role_name, extra_entries in role_entries.items():
-            role = discord.utils.get(traders_compound_guild.roles, name=role_name)
-            if role:
-                role_users = [u for u in users if role in u.roles]
-                extra_entries_users.extend(role_users * extra_entries)
+        await channel.send(f"Congratulations {winner.mention}, you are the new winner! <:tc_tada:1102929530794016870>")
 
-        users += extra_entries_users
-
-        if users:
-            print(users)
-            winner = random.choice(users)
-            await channel.send(f"Congratulations {winner.mention}, you are the new winner! <:tc_tada:1102929530794016870>")
-        else:
-            await channel.send("No eligible winner found.")
-        
 
         FinishedEmbed = discord.Embed(title = f"{prize}", description="This Giveaway Has Ended", color = 0x86def2)
         FinishedEmbed.add_field(name = f"", value = f"The winner was {winner.mention}")
