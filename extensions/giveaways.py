@@ -197,8 +197,8 @@ class Giveaway(commands.Cog):
 
         if not row:
             return
-        
-        prize = row
+
+        prize = row[0]
 
 
         channel = self.bot.get_channel(int(channel_id))
