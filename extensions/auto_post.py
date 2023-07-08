@@ -5,6 +5,7 @@ import logging
 import aiosqlite
 from datetime import date
 import datetime
+from config import DB
 
 
 
@@ -12,7 +13,6 @@ import datetime
 LOW_TIER_ID = 957348847175209030
 MID_TIER_ID = 953632090149232731
 HIGH_TIER_ID = 957349993847615489
-DB = "EmployeeBotDB.db"
 
 
 class AutoPost(commands.Cog):

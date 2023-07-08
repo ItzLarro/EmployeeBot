@@ -5,6 +5,7 @@ import datetime
 import arrow
 import logging
 import aiosqlite
+from config import DB
 import random
 
 
@@ -32,8 +33,6 @@ def convert(time):
     return val * time_dict[unit]
 
 
-
-DB = "EmployeeBotDB.db"
 
 
 
