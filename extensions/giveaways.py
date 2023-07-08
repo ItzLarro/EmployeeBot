@@ -226,7 +226,7 @@ class Giveaway(commands.Cog):
 
         winner = await roll(reaction, traders_compound_guild)
 
-
+        await interaction.response.send_message("New Winner Successfully Picked!")
         await channel.send(f"Congratulations {winner.mention}, you are the new winner! <:tc_tada:1102929530794016870>")
 
 
