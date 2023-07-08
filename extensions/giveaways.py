@@ -234,6 +234,26 @@ class Giveaway(commands.Cog):
         FinishedEmbed.add_field(name = f"", value = f"The winner was {winner.mention}")
         await m.edit(embed = FinishedEmbed)
 
+    
+    @commands.Cog.listener()
+    async def on_giveaway_reaction(reaction, user):
+        if user.bot:
+            return
+
+        traders_compound_guild = reaction.message.guild
+        custom_emoji = discord.utils.get(traders_compound_guild.emojis, name="tc_tada")
+
+        if reaction.emoji != custom_emoji:
+            return
+
+        channel = reaction.message.channel
+        prize = reaction.message.embeds[0].title
+
+        ephemeral_message = f"You have been entered into the giveaway for {prize}."
+        ephemeral_message += " Good luck!"
+
+        await user.send(ephemeral_message)
+
 
 
 async def setup(bot: commands.Bot) -> None:
