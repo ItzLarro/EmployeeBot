@@ -96,6 +96,7 @@ async def sync(ctx: commands.Context, guilds: commands.Greedy[discord.Object], s
 async def main() -> None:
     async with bot:
         await mass_load()
+        print(await get_extensions())
 
         await bot.start(TOKEN)
 

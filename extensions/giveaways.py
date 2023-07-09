@@ -5,8 +5,8 @@ import datetime
 import arrow
 import logging
 import aiosqlite
-from config import DB
 import random
+from config import DB
 
 
 
@@ -33,10 +33,12 @@ async def roll(reaction, traders_compound_guild):
 
     users += extra_entries_users
 
+
     if users:
         winner = random.choice(users)
-    
+
     return winner
+
 
 
 async def flag(message_id, channel_id):
@@ -44,6 +46,8 @@ async def flag(message_id, channel_id):
         cursor = await conn.cursor()
         await cursor.execute('UPDATE Giveaways SET completed = TRUE WHERE message_id = ? AND channel_id = ?', (message_id, channel_id))
         await conn.commit()
+
+
 
 
 def convert(time):
@@ -168,7 +172,6 @@ class Giveaway(commands.Cog):
 
         await channel.send(f"Congratulations {winner.mention}, you won the {prize}! <:tc_tada:1102929530794016870>")
 
-
         FinishedEmbed = discord.Embed(title = f"{prize}", description="This Giveaway Has Ended", color = 0x86def2)
         FinishedEmbed.add_field(name = f"", value = f"The winner was {winner.mention}")
         await m.edit(embed = FinishedEmbed)
@@ -233,27 +236,6 @@ class Giveaway(commands.Cog):
         FinishedEmbed = discord.Embed(title = f"{prize}", description="This Giveaway Has Ended", color = 0x86def2)
         FinishedEmbed.add_field(name = f"", value = f"The winner was {winner.mention}")
         await m.edit(embed = FinishedEmbed)
-
-    
-    @commands.Cog.listener()
-    async def on_giveaway_reaction(reaction, user):
-        if user.bot:
-            return
-
-        traders_compound_guild = reaction.message.guild
-        custom_emoji = discord.utils.get(traders_compound_guild.emojis, name="tc_tada")
-
-        if reaction.emoji != custom_emoji:
-            return
-
-        channel = reaction.message.channel
-        prize = reaction.message.embeds[0].title
-
-        ephemeral_message = f"You have been entered into the giveaway for {prize}."
-        ephemeral_message += " Good luck!"
-
-        await user.send(ephemeral_message)
-
 
 
 async def setup(bot: commands.Bot) -> None:

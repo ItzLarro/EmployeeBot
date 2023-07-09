@@ -8,8 +8,6 @@ import datetime
 from config import DB
 
 
-
-
 LOW_TIER_ID = 957348847175209030
 MID_TIER_ID = 953632090149232731
 HIGH_TIER_ID = 957349993847615489
@@ -131,7 +129,7 @@ class AutoPost(commands.Cog):
 
             cursor = await conn.cursor()
 
-            await cursor.execute("UPDATE TradeAds SET next_post = datetime(CURRENT_TIMESTAMP, '+3 hours') WHERE user_id = ? AND channel_id = ?", (user_id, channel_id))
+            await cursor.execute("UPDATE TradeAds SET next_post = datetime(next_post, '+3 hours') WHERE user_id = ? AND channel_id = ?", (user_id, channel_id))
             (user_id, channel_id)
 
             await conn.commit()
@@ -146,6 +144,7 @@ class AutoPost(commands.Cog):
 
 
     @app_commands.command(name='cleartdb', description='Clear the trade database')
+    @app_commands.default_permissions(administrator=True)
     async def slash_cleartdb(self, interaction: discord.Interaction):
         await interaction.response.defer()
         async with aiosqlite.connect(DB) as conn:
@@ -155,6 +154,7 @@ class AutoPost(commands.Cog):
         await interaction.followup.send("Trade database cleared.")
     
     @app_commands.command(name = "stopauto", description="Stops the autoposting across the entire server")
+    @app_commands.default_permissions(administrator=True)
     async def slash_stopauto(self, interaction: discord.Interaction):
         if interaction.user.guild_permissions.administrator:
             await interaction.response.defer()
